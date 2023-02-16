@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Math/Color.h"
 #include "Components/SphereComponent.h"
 #include "Components/PointLightComponent.h"
 
@@ -46,11 +47,6 @@ private:
 	/// Estado actual del semáforo
 	/// </summary>
 	State _currentState;
-
-	/// <summary>
-	/// Colores del semáforo
-	/// </summary>
-	TArray<FColor> _colors;
 
 public:	
 	// Sets default values for this actor's properties
