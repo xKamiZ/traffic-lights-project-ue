@@ -8,7 +8,7 @@
 ATrafficLightActor::ATrafficLightActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Init();
 	SusbcribeToTriggerEvents();
@@ -21,7 +21,7 @@ void ATrafficLightActor::BeginPlay()
 	Super::BeginPlay();
 
 	// Establece el color por defecto del semáforo
-	_light->SetLightColor(FLinearColor::Green);
+	light->SetLightColor(FLinearColor::Green);
 }
 void ATrafficLightActor::Tick(float DeltaTime)
 {
@@ -35,30 +35,34 @@ void ATrafficLightActor::Tick(float DeltaTime)
 void ATrafficLightActor::Init()
 {
 	// El estado por defecto del semáforo es ON
-	_currentState = State::ON;
+	currentState = State::ON;
 
 	//Se crea el componente collider
-	_sphereCollider = CreateDefaultSubobject<USphereComponent>("Sphere Collider");
+	sphereCollider = CreateDefaultSubobject<USphereComponent>("Sphere Collider");
 
 	//Se establece el radio de la esfera
-	_sphereCollider->SetSphereRadius(180.0f);
+	sphereCollider->SetSphereRadius(180.0f);
 
 	//Se modifica la jerarquía de compnentes
-	_sphereCollider->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	sphereCollider->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	// Se crea el componente Point Light
-	_light = CreateDefaultSubobject<UPointLightComponent>("Point Light");
+	light = CreateDefaultSubobject<UPointLightComponent>("Point Light");
 	
 	// Establece el componente padre de la luz en la jerarquía de componentes del objeto
-	_light->AttachToComponent(_sphereCollider, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	light->AttachToComponent(sphereCollider, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 void ATrafficLightActor::SusbcribeToTriggerEvents()
 {
 	//Suscripción al los eventos de beginOverlap (trigger enter)
-	_sphereCollider->OnComponentBeginOverlap.AddDynamic(this, &ATrafficLightActor::TriggerEnter);
+	sphereCollider->OnComponentBeginOverlap.AddDynamic(this, &ATrafficLightActor::TriggerEnter);
 
 	//Suscripción al los eventos de endOverlap (trigger exit)
-	_sphereCollider->OnComponentEndOverlap.AddDynamic(this, &ATrafficLightActor::TriggerExit);
+	sphereCollider->OnComponentEndOverlap.AddDynamic(this, &ATrafficLightActor::TriggerExit);
+}
+void ATrafficLightActor::SetState(const State & newState)
+{
+	currentState = newState;
 }
 
 #pragma endregion
@@ -67,15 +71,40 @@ void ATrafficLightActor::SusbcribeToTriggerEvents()
 
 void ATrafficLightActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
-	// Comprobar si es un ADisplacerActor.
-	
-	// Si lo es, detener su movimiento.
-	// Iniciar timer del semáforo.
-	// Cuando
+	// Añade el actor que ha entrado al buffer.
+	buffer.Enqueue(otherActor);
+
+	// Si estado == ON -> estado pasa a OFF. Cambia el color a rojo
+	// Si estado == OFF o WAIT, mantiene ese estado. Detiene movimiento del desplazador que ha entrado.
+	if (currentState == State::ON)
+	{
+		SetState(State::OFF);
+		light->SetLightColor(FLinearColor::Red);
+	}
+	else
+		OnRestrictedAccess.Broadcast();
 }
 void ATrafficLightActor::TriggerExit(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
 {
+	// Saca el actor del buffer
+	buffer.Pop();
 
+	// Estado == WAIT.
+	// Inicia timer del semáforo
+	
+	 
+	// Timer finaliza:
+	// Si buffer > 0 -> Estado OFF, permitir paso del siguiente elemento en el buffer.
+	// Si buffer <= 0 -> Estado ON. Cambia color a verde.
+	if (buffer.IsEmpty()) 
+	{
+		SetState(State::OFF);
+	}
+	else
+	{
+		SetState(State::ON);
+		light->SetLightColor(FLinearColor::Green);
+	}
 }
 
 #pragma endregion

@@ -19,11 +19,17 @@ public:
 	/// Velocidad de movimiento del actor.
 	/// </summary>
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Custom Properties")
-		float displacementSpeed;
+		float movementSpeed;
 		
+	/// <summary>
+	/// Posición en el mundo que funcionará como punto de referencia a donde moverse
+	/// </summary>
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Custom Properties")
 		FVector firstTargetLocation;
 
+	/// <summary>
+	/// Posición en el mundo que funcionará como punto de referencia a donde moverse
+	/// </summary>
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Custom Properties")
 		FVector secondTargetLocation;
 
@@ -34,15 +40,41 @@ public:
 		class UStaticMeshComponent* mesh;
 
 public:	
-	// Sets default values for this actor's properties
+
 	ADisplacerActor();
 
 protected:
-	// Called when the game starts or when spawned
+
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
+
 	virtual void Tick(float DeltaTime) override;
 
+private:
+
+	/// <summary>
+	/// Inicializa las propiedades de clase. Se ejecuta en el constructor.
+	/// </summary>
+	void Init();
+
+	/// <summary>
+	/// Se llama como respuesta al delegado invocado por el semáforo
+	/// cuando éste está siendo utilizado. 
+	/// Detiene el movimiento del desplazador.
+	/// </summary>
+	UFUNCTION()
+	void RestrictedAccessResponse();
+
+	/// <summary>
+	/// Responde al evento de trigger cuando un objeto entra en la geometría de colisiones
+	/// </summary>
+	UFUNCTION()
+		void TriggerEnter(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	/// <summary>
+	/// Responde al evento de trigger cuando un objeto sale de la geometría de colisiones
+	/// </summary>
+	UFUNCTION()
+		void TriggerExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };
