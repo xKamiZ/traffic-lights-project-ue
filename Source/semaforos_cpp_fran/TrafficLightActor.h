@@ -21,6 +21,12 @@ public:
 	/// <summary>
 	/// Geometría trigger del objeto
 	/// </summary>
+	UPROPERTY(EditAnyWhere, Category = "Traffic Light Parameters")
+		float resetTime;
+
+	/// <summary>
+	/// Geometría trigger del objeto
+	/// </summary>
 	UPROPERTY(EditAnyWhere, Category = "Trigger Collision Params")
 		class USphereComponent* sphereCollider;
 
@@ -40,16 +46,16 @@ private:
 
 	/// <summary>
 	/// Indica el estado en el que se encuentra el semáforo.
-	/// ON: Indica que no hay ningún desplazador esperando la respuesta del semáforo (color verde).
-	/// OFF: Indica que un desplazador está dentro de la zona (trigger) del semáforo (color rojo).
-	/// WAIT: Indica que el semáforo tiene se está reiniciando después de que un desplazador haya 
+	/// OPENED: Indica que no hay ningún desplazador esperando la respuesta del semáforo (color verde).
+	/// CLOSED: Indica que un desplazador está dentro de la zona (trigger) del semáforo (color rojo).
+	/// WAITING: Indica que el semáforo tiene se está reiniciando después de que un desplazador haya 
 	/// abandonado el área de influencia.
 	/// </summary>
 	enum State 
 	{
-		ON,
-		OFF,
-		WAIT
+		OPENED,
+		CLOSED,
+		WAITING
 	};
 
 private:
@@ -63,6 +69,11 @@ private:
 	///	Buffer de actores que entran en el área de influencia de un semáforo.
 	/// </summary>
 	TQueue<AActor*> buffer;
+
+	/// <summary>
+	/// Delegado único del timer
+	/// </summary>
+	FTimerHandle stateResetTimer;
 
 public:	
 
@@ -107,4 +118,10 @@ private:
 	/// Establece un nuevo estado para el semáforo
 	/// </summary>
 	void SetState(const State & newState);
+
+	/// <summary>
+	/// Se llama tras finalizar el timer. 
+	/// Establece el estado del semáforo tras la espera.
+	/// </summary>
+	void ResetTrafficLight();
 };

@@ -21,6 +21,8 @@ void ATrafficLightActor::BeginPlay()
 
 	// Establece el color por defecto del semáforo
 	light->SetLightColor(FLinearColor::Green);
+
+	//GetWorldTimerManager().SetTimer(timerId, this, &ATrafficLightActor::Switching, interval, true, 0);
 }
 void ATrafficLightActor::Tick(float DeltaTime)
 {
@@ -34,7 +36,9 @@ void ATrafficLightActor::Tick(float DeltaTime)
 void ATrafficLightActor::Init()
 {
 	// El estado por defecto del semáforo es ON
-	currentState = State::ON;
+	currentState = State::OPENED;
+
+	resetTime = 3.0f;
 
 	//Se crea el componente collider
 	sphereCollider = CreateDefaultSubobject<USphereComponent>("Sphere Collider");
@@ -51,6 +55,7 @@ void ATrafficLightActor::Init()
 	// Establece el componente padre de la luz en la jerarquía de componentes del objeto
 	light->AttachToComponent(sphereCollider, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
+
 void ATrafficLightActor::SusbcribeToTriggerEvents()
 {
 	//Suscripción al los eventos de beginOverlap (trigger enter)
@@ -59,9 +64,23 @@ void ATrafficLightActor::SusbcribeToTriggerEvents()
 	//Suscripción al los eventos de endOverlap (trigger exit)
 	sphereCollider->OnComponentEndOverlap.AddDynamic(this, &ATrafficLightActor::TriggerExit);
 }
+
 void ATrafficLightActor::SetState(const State & newState)
 {
 	currentState = newState;
+}
+
+void ATrafficLightActor::ResetTrafficLight()
+{
+	if (buffer.IsEmpty()) SetState(State::OPENED);
+	else
+	{
+		SetState(State::CLOSED);
+		light->SetLightColor(FLinearColor::Green);
+	}
+
+	// Reinicia el timer
+	GetWorldTimerManager().ClearTimer(stateResetTimer);
 }
 
 #pragma endregion
@@ -75,9 +94,9 @@ void ATrafficLightActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* othe
 
 	// Si estado == ON -> estado pasa a OFF. Cambia el color a rojo
 	// Si estado == OFF o WAIT, mantiene ese estado. Detiene movimiento del desplazador que ha entrado.
-	if (currentState == State::ON)
+	if (currentState == State::OPENED)
 	{
-		SetState(State::OFF);
+		SetState(State::CLOSED);
 		light->SetLightColor(FLinearColor::Red);
 	}
 	else
@@ -89,21 +108,10 @@ void ATrafficLightActor::TriggerExit(UPrimitiveComponent* hitComp, AActor* other
 	buffer.Pop();
 
 	// Estado == WAIT.
-	// Inicia timer del semáforo
-	
-	 
-	// Timer finaliza:
-	// Si buffer > 0 -> Estado OFF, permitir paso del siguiente elemento en el buffer.
-	// Si buffer <= 0 -> Estado ON. Cambia color a verde.
-	if (buffer.IsEmpty()) 
-	{
-		SetState(State::OFF);
-	}
-	else
-	{
-		SetState(State::ON);
-		light->SetLightColor(FLinearColor::Green);
-	}
+	SetState(State::WAITING);
+
+	// Inicia el contador que reiniciará el semáforo
+	GetWorld()->GetTimerManager().SetTimer(stateResetTimer, this, &ATrafficLightActor::ResetTrafficLight, resetTime, false);
 }
 
 #pragma endregion
