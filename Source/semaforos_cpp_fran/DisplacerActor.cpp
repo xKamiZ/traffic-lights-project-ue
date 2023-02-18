@@ -2,8 +2,8 @@
 
 
 #include "DisplacerActor.h"
+#include "TrafficLightActor.h"
 
-// Sets default values
 ADisplacerActor::ADisplacerActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -49,14 +49,24 @@ void ADisplacerActor::RestrictedAccessResponse()
 void ADisplacerActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Trigger Enter"));
-	// Castear a ATrafficLightActor
-	// Si casting correcto -> Conectar su evento del semáforo al método correspondiente
+
+	// Intenta convertir a ATrafficLightActor
+	ATrafficLightActor* trafficLight = Cast<ATrafficLightActor>(otherActor);
+
+	// Si casting correcto -> Se suscribe el evento del semáforo al método correspondiente
+	if (trafficLight)
+		trafficLight->OnRestrictedAccess.AddDynamic(this, &ADisplacerActor::RestrictedAccessResponse);
 }
 void ADisplacerActor::TriggerExit(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
 {
 	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Trigger Exit"));
-	// Castear a ATrafficLightActor
-	// Si casting correcto -> Desconectar su evento del semáforo al método correspondiente
+
+	// Intenta convertir a ATrafficLightActor
+	ATrafficLightActor* trafficLight = Cast<ATrafficLightActor>(otherActor);
+
+	// Si casting correcto -> Se desuscribe del evento del semáforo
+	if (trafficLight)
+		trafficLight->OnRestrictedAccess.RemoveDynamic(this, &ADisplacerActor::RestrictedAccessResponse);
 }
 
 #pragma endregion

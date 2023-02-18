@@ -82,19 +82,20 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-private:
-
 	/// <summary>
 	/// Responde al evento de trigger cuando un objeto entra en la geometría de colisiones
 	/// </summary>
 	UFUNCTION()
-	void TriggerEnter(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void TriggerEnter(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	/// <summary>
 	/// Responde al evento de trigger cuando un objeto sale de la geometría de colisiones
 	/// </summary>
 	UFUNCTION()
-	void TriggerExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+		void TriggerExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+
+private:
 
 	/// <summary>
 	/// Suscribe una función a cada evento de trigger

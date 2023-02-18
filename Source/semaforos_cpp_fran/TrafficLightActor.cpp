@@ -2,7 +2,6 @@
 
 
 #include "TrafficLightActor.h"
-#include "DisplacerActor.h"
 
 // Sets default values
 ATrafficLightActor::ATrafficLightActor()

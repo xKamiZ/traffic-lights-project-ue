@@ -51,30 +51,30 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-private:
-
-	/// <summary>
-	/// Inicializa las propiedades de clase. Se ejecuta en el constructor.
-	/// </summary>
-	void Init();
-
 	/// <summary>
 	/// Se llama como respuesta al delegado invocado por el semáforo
 	/// cuando éste está siendo utilizado. 
 	/// Detiene el movimiento del desplazador.
 	/// </summary>
 	UFUNCTION()
-	void RestrictedAccessResponse();
+		void RestrictedAccessResponse();
 
 	/// <summary>
 	/// Responde al evento de trigger cuando un objeto entra en la geometría de colisiones
 	/// </summary>
 	UFUNCTION()
-		void TriggerEnter(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+		void TriggerEnter(class UPrimitiveComponent* hitComp, class AActor* otherActor, class UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult);
 
 	/// <summary>
 	/// Responde al evento de trigger cuando un objeto sale de la geometría de colisiones
 	/// </summary>
 	UFUNCTION()
-		void TriggerExit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+		void TriggerExit(class UPrimitiveComponent* hitComp, class AActor* otherActor, class UPrimitiveComponent* otherComp, int32 otherBodyIndex);
+
+private:
+
+	/// <summary>
+	/// Inicializa las propiedades de clase. Se ejecuta en el constructor.
+	/// </summary>
+	void Init();
 };
