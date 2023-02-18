@@ -2,6 +2,7 @@
 
 
 #include "TrafficLightActor.h"
+#include "TrafficLightResponse.h"
 
 // Sets default values
 ATrafficLightActor::ATrafficLightActor()
@@ -21,8 +22,6 @@ void ATrafficLightActor::BeginPlay()
 
 	// Establece el color por defecto del semáforo
 	light->SetLightColor(FLinearColor::Green);
-
-	//GetWorldTimerManager().SetTimer(timerId, this, &ATrafficLightActor::Switching, interval, true, 0);
 }
 void ATrafficLightActor::Tick(float DeltaTime)
 {
@@ -72,11 +71,22 @@ void ATrafficLightActor::SetState(const State & newState)
 
 void ATrafficLightActor::ResetTrafficLight()
 {
-	if (buffer.IsEmpty()) SetState(State::OPENED);
+	// Comprueba si queda alguien más en la cola
+	if (buffer.IsEmpty())
+	{
+		SetState(State::OPENED);
+
+		light->SetLightColor(FLinearColor::Green);
+	}
 	else
 	{
 		SetState(State::CLOSED);
-		light->SetLightColor(FLinearColor::Green);
+
+		light->SetLightColor(FLinearColor::Red);
+
+		// Obtiene el siguiente en la cola y le proporciona acceso
+		//auto nextInQueue = buffer.Peek();
+		//**nextInQueue->AllowAccess();
 	}
 
 	// Reinicia el timer
@@ -89,8 +99,12 @@ void ATrafficLightActor::ResetTrafficLight()
 
 void ATrafficLightActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
+	if (!otherActor->GetClass()->ImplementsInterface(UTrafficLightResponse::StaticClass())) return;
+
+	auto instigator = Cast<ITrafficLightResponse>(otherActor);
+
 	// Añade el actor que ha entrado al buffer.
-	buffer.Enqueue(otherActor);
+	buffer.Enqueue(instigator);
 
 	// Si estado == ON -> estado pasa a OFF. Cambia el color a rojo
 	// Si estado == OFF o WAIT, mantiene ese estado. Detiene movimiento del desplazador que ha entrado.
@@ -100,11 +114,16 @@ void ATrafficLightActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* othe
 		light->SetLightColor(FLinearColor::Red);
 	}
 	else
-		OnRestrictedAccess.Broadcast();
+	{
+		// Denegar acceso a través de la interfaz
+		instigator->RefuseAccess();
+	}
 }
 void ATrafficLightActor::TriggerExit(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
 {
-	// Saca el actor del buffer
+	if (!otherActor->GetClass()->ImplementsInterface(UTrafficLightResponse::StaticClass())) return;
+
+	// Elimina de la cola el actor que acaba de salir del trigger
 	buffer.Pop();
 
 	// Estado == WAIT.

@@ -10,9 +10,6 @@ ADisplacerActor::ADisplacerActor()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Init();
-
-	mesh->OnComponentBeginOverlap.AddDynamic(this, &ADisplacerActor::TriggerEnter);
-	mesh->OnComponentEndOverlap.AddDynamic(this, &ADisplacerActor::TriggerExit);
 }
 
 #pragma region Built In Methods
@@ -36,37 +33,19 @@ void ADisplacerActor::Init()
 	mesh = CreateAbstractDefaultSubobject<UStaticMeshComponent>(TEXT("Displacer Mesh"));
 	mesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
-void ADisplacerActor::RestrictedAccessResponse()
-{
 
+void ADisplacerActor::RefuseAccess()
+{
+	SetMovement(false);
 }
 
-#pragma endregion
-
-
-#pragma region Handle Trigger Event Methods
-
-void ADisplacerActor::TriggerEnter(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
+void ADisplacerActor::AllowAccess()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Trigger Enter"));
-
-	// Intenta convertir a ATrafficLightActor
-	ATrafficLightActor* trafficLight = Cast<ATrafficLightActor>(otherActor);
-
-	// Si casting correcto -> Se suscribe el evento del semáforo al método correspondiente
-	if (trafficLight)
-		trafficLight->OnRestrictedAccess.AddDynamic(this, &ADisplacerActor::RestrictedAccessResponse);
-}
-void ADisplacerActor::TriggerExit(UPrimitiveComponent* hitComp, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Trigger Exit"));
-
-	// Intenta convertir a ATrafficLightActor
-	ATrafficLightActor* trafficLight = Cast<ATrafficLightActor>(otherActor);
-
-	// Si casting correcto -> Se desuscribe del evento del semáforo
-	if (trafficLight)
-		trafficLight->OnRestrictedAccess.RemoveDynamic(this, &ADisplacerActor::RestrictedAccessResponse);
+	SetMovement(true);
 }
 
+void ADisplacerActor::SetMovement(bool newState)
+{
+	canMove = newState;
+}
 #pragma endregion

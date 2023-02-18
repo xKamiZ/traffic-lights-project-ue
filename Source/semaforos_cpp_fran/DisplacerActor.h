@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/BoxComponent.h"
+#include "TrafficLightResponse.h"
 #include "Components/StaticMeshComponent.h"
+
 #include "DisplacerActor.generated.h"
 
 UCLASS()
-class SEMAFOROS_CPP_FRAN_API ADisplacerActor : public AActor
+class SEMAFOROS_CPP_FRAN_API ADisplacerActor : public AActor, public ITrafficLightResponse
 {
 	GENERATED_BODY()
 
@@ -39,6 +41,13 @@ public:
 	UPROPERTY(EditAnyWhere, Category = "Custom Mesh")
 		class UStaticMeshComponent* mesh;
 
+private:
+
+	/// <summary>
+	/// Indica si el desplazador se puede mover o no.
+	/// </summary>
+	bool canMove;
+
 public:	
 
 	ADisplacerActor();
@@ -52,24 +61,21 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/// <summary>
-	/// Se llama como respuesta al delegado invocado por el semáforo
-	/// cuando éste está siendo utilizado. 
-	/// Detiene el movimiento del desplazador.
+	/// Implementado de la interfaz.
+	/// Deshabilita el movimiento del desplazador.
 	/// </summary>
-	UFUNCTION()
-		void RestrictedAccessResponse();
+	virtual void RefuseAccess() override;
 
 	/// <summary>
-	/// Responde al evento de trigger cuando un objeto entra en la geometría de colisiones
+	/// Implementado de la interfaz.
+	/// Habilita el movimiento del desplazador.
 	/// </summary>
-	UFUNCTION()
-		void TriggerEnter(class UPrimitiveComponent* hitComp, class AActor* otherActor, class UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult);
+	virtual void AllowAccess() override;
 
 	/// <summary>
-	/// Responde al evento de trigger cuando un objeto sale de la geometría de colisiones
+	/// Activa o desactiva el movimiento del desplazador.
 	/// </summary>
-	UFUNCTION()
-		void TriggerExit(class UPrimitiveComponent* hitComp, class AActor* otherActor, class UPrimitiveComponent* otherComp, int32 otherBodyIndex);
+	void SetMovement(bool newState);
 
 private:
 

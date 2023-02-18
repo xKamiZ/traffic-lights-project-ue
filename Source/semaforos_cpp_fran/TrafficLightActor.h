@@ -5,11 +5,12 @@
 #include "CoreMinimal.h"
 #include "Math/Color.h"
 #include "GameFramework/Actor.h"
+#include "Containers/Queue.h"
 #include "Components/SphereComponent.h"
 #include "Components/PointLightComponent.h"
-#include "TrafficLightActor.generated.h"
+#include "TrafficLightResponse.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FRestrictedAccess);
+#include "TrafficLightActor.generated.h"
 
 UCLASS()
 class SEMAFOROS_CPP_FRAN_API ATrafficLightActor : public AActor
@@ -36,12 +37,6 @@ public:
 	UPROPERTY(EditAnyWhere, Category = "Light Params")
 		UPointLightComponent* light;
 
-	/// <summary>
-	/// Se invoca cuando el semáforo ya está siendo utilizado.
-	/// </summary>
-	UPROPERTY(BlueprintAssignable)
-	FRestrictedAccess OnRestrictedAccess;
-
 private:
 
 	/// <summary>
@@ -66,9 +61,9 @@ private:
 	State currentState;
 
 	/// <summary>
-	///	Buffer de actores que entran en el área de influencia de un semáforo.
+	///	Buffer de actores que entran en el área de influencia del semáforo.
 	/// </summary>
-	TQueue<AActor*> buffer;
+	TQueue<ITrafficLightResponse*> buffer;
 
 	/// <summary>
 	/// Delegado único del timer
