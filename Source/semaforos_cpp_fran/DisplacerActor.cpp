@@ -18,10 +18,25 @@ void ADisplacerActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+	movementDirection = wayPointLocation - startLocation;
+
+	pathDistance = movementDirection.Size();
+
+	movementDirection = movementDirection.GetSafeNormal();
+
+	SetMovement(true);
 }
 void ADisplacerActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!canMove) return;
+
+	currentLocation = GetActorLocation();
+
+	//if (WaypointReached()) InvertMovementSense();
+
+	HandleDisplacerMovement(DeltaTime);
 }
 
 #pragma endregion
@@ -32,6 +47,15 @@ void ADisplacerActor::Init()
 {
 	mesh = CreateAbstractDefaultSubobject<UStaticMeshComponent>(TEXT("Displacer Mesh"));
 	mesh->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+}
+
+void ADisplacerActor::HandleDisplacerMovement(float deltaTime)
+{
+	if (currentLocation == wayPointLocation || currentLocation == startLocation) InvertMovementSense();
+
+	currentLocation += movementDirection * movementSpeed * deltaTime;
+
+	SetActorLocation(currentLocation);
 }
 
 void ADisplacerActor::RefuseAccess()
@@ -48,4 +72,5 @@ void ADisplacerActor::SetMovement(bool newState)
 {
 	canMove = newState;
 }
+
 #pragma endregion
