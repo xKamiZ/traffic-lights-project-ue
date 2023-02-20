@@ -3,6 +3,7 @@
 
 #include "DisplacerActor.h"
 #include "TrafficLightActor.h"
+#include "Math/UnrealMathUtility.h"
 
 ADisplacerActor::ADisplacerActor()
 {
@@ -17,6 +18,8 @@ ADisplacerActor::ADisplacerActor()
 void ADisplacerActor::BeginPlay()
 {
 	Super::BeginPlay();
+
+	startLocation = GetActorLocation();
 
 	movementDirection = wayPointLocation - startLocation;
 
@@ -34,7 +37,8 @@ void ADisplacerActor::Tick(float DeltaTime)
 
 	currentLocation = GetActorLocation();
 
-	//if (WaypointReached()) InvertMovementSense();
+	// Mantiene constante el eje vertical
+	movementDirection.Z = startLocation.Z;
 
 	HandleDisplacerMovement(DeltaTime);
 }
@@ -51,11 +55,14 @@ void ADisplacerActor::Init()
 
 void ADisplacerActor::HandleDisplacerMovement(float deltaTime)
 {
-	if (currentLocation == wayPointLocation || currentLocation == startLocation) InvertMovementSense();
-
+	// Movimiento del actor
 	currentLocation += movementDirection * movementSpeed * deltaTime;
-
 	SetActorLocation(currentLocation);
+
+
+	//InvertMovementSense();
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Target Position Reached!"));
+
 }
 
 void ADisplacerActor::RefuseAccess()
