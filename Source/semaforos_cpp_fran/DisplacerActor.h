@@ -35,7 +35,7 @@ public:
 	/// Posición en el mundo que funcionará como punto de referencia a donde moverse
 	/// </summary>
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite, Category = "Custom Properties")
-		FVector wayPointLocation;
+		FVector wayPoint;
 
 	/// <summary>
 	/// Malla del objeto
@@ -51,8 +51,7 @@ private:
 	bool canMove;
 
 	/// <summary>
-	/// Controla la dirección de movimiento del actor.
-	/// Se calcula en Init el vector entre firstTargetLocation y secondTargetLocation.
+	/// Dirección de movimiento actual del desplazador.
 	/// </summary>
 	FVector movementDirection;
 
@@ -67,9 +66,14 @@ private:
 	FVector currentLocation;
 
 	/// <summary>
-	/// Distancia lineal de la dirección.
+	/// Posición a la que se debe comprobar distancia.
 	/// </summary>
-	float pathDistance;
+	FVector currentTargetLocation;
+
+	/// <summary>
+	/// offsetToReachPoint al cuadrado.
+	/// </summary>
+	float squareOffset;
 
 public:	
 
@@ -122,5 +126,5 @@ private:
 	/// <summary>
 	/// Invierte el sentido del movimiento del actor.
 	/// </summary>
-	inline void InvertMovementSense() { movementDirection *= -1.0f; }
+	inline void InvertMovementSense() { movementDirection *= -1; }
 };

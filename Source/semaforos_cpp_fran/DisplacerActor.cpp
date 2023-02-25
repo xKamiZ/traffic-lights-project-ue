@@ -21,13 +21,13 @@ void ADisplacerActor::BeginPlay()
 
 	startLocation = GetActorLocation();
 
-	movementDirection = wayPointLocation - startLocation;
-
-	pathDistance = movementDirection.Size();
-
-	movementDirection = movementDirection.GetSafeNormal();
+	movementDirection = GetActorForwardVector();
 
 	SetMovement(true);
+
+	squareOffset = FMath::Pow(offsetToReachPoint, 2);
+
+	currentTargetLocation = wayPoint;
 }
 void ADisplacerActor::Tick(float DeltaTime)
 {
@@ -35,10 +35,9 @@ void ADisplacerActor::Tick(float DeltaTime)
 
 	if (!canMove) return;
 
-	currentLocation = GetActorLocation();
+	if (WaypointReached()) InvertMovementSense();
 
-	// Mantiene constante el eje vertical
-	movementDirection.Z = startLocation.Z;
+	currentLocation = GetActorLocation();
 
 	HandleDisplacerMovement(DeltaTime);
 }
@@ -55,14 +54,29 @@ void ADisplacerActor::Init()
 
 void ADisplacerActor::HandleDisplacerMovement(float deltaTime)
 {
-	// Movimiento del actor
 	currentLocation += movementDirection * movementSpeed * deltaTime;
+
 	SetActorLocation(currentLocation);
+}
 
+bool ADisplacerActor::WaypointReached()
+{
+	// Se calculan las distancias cuadradas para evitar calcular la magnitud del vector en cada frame
+	float xSquareDistanceToTarget = FMath::Pow((currentTargetLocation.X - currentLocation.X), 2);
+	float ySquareDistanceToTarget = FMath::Pow((currentTargetLocation.Y - currentLocation.Y), 2);
 
-	//InvertMovementSense();
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Target Position Reached!"));
+	float squareDistanceToTarget = xSquareDistanceToTarget + ySquareDistanceToTarget;
 
+	if (squareDistanceToTarget < squareOffset)
+	{
+		// Se cambia la posición objetivo
+		if (currentTargetLocation == wayPoint) currentTargetLocation = startLocation;
+		else currentTargetLocation = wayPoint;
+
+		return true;
+	}
+
+	return false;
 }
 
 void ADisplacerActor::RefuseAccess()
