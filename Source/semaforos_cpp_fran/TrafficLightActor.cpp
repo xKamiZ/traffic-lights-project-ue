@@ -85,8 +85,8 @@ void ATrafficLightActor::ResetTrafficLight()
 		light->SetLightColor(FLinearColor::Red);
 
 		// Obtiene el siguiente en la cola y le proporciona acceso
-		//auto nextInQueue = buffer.Peek();
-		//**nextInQueue->AllowAccess();
+		auto nextInQueue = buffer.Peek();
+		(*nextInQueue)->AllowAccess();
 	}
 
 	// Reinicia el timer
